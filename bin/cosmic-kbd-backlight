@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 # cosmic-kbd-backlight {+|-|up|down}
 #
 # Steps the keyboard backlight by 5% of full scale.

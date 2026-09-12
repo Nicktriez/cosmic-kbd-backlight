@@ -56,6 +56,10 @@ keys stop working after visiting that page, run `./install.sh repair`.
 `INSTALL_BIN_DIR` overrides where the helper is installed and `XDG_CONFIG_HOME`
 overrides the config root. Both are mainly useful for testing in a sandbox.
 
+## License
+
+MIT — see [LICENSE](LICENSE). Use it, change it, ship it.
+
 ## Upstream
 
 This is a workaround, not the real fix. The proper solution belongs in

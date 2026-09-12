@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
 # cosmic-kbd-backlight - make the keyboard backlight brightness keys work on COSMIC
 #
 #   ./install.sh            install (or repair) the helper and the two bindings
@@ -43,7 +44,10 @@ else
 fi
 
 usage() {
-    sed -n '2,19p' "$SELF" | sed 's/^# \{0,1\}//'
+    # Print the leading comment block, minus the shebang and the SPDX line.
+    awk 'NR==1 || /^# SPDX-License-Identifier:/ {next}
+         /^#/ {sub(/^# ?/, ""); print; next}
+         {exit}' "$SELF"
 }
 
 merge_config() {
