@@ -1,0 +1,41 @@
+#!/bin/sh
+# cosmic-kbd-backlight {+|-|up|down}
+#
+# Steps the keyboard backlight by 5% of full scale.
+#
+# Works through UPower's KbdBacklight interface, which runs as root and is
+# permitted for the active session by polkit. Using UPower rather than writing
+# the LED directly also emits BrightnessChanged, which is what makes cosmic-osd
+# show the keyboard-brightness on-screen indicator.
+#
+# The device is not hardcoded: whatever keyboard backlight the machine exposes
+# (smc::kbd_backlight on Apple hardware, system76::kbd_backlight, ...) is used.
+set -eu
+
+case "${1:-}" in
+    +|up)   DIR=+ ;;
+    -|down) DIR=- ;;
+    *) echo "usage: $0 {+|-}" >&2; exit 2 ;;
+esac
+
+SVC=org.freedesktop.UPower
+OBJ=/org/freedesktop/UPower/KbdBacklight
+IFC=org.freedesktop.UPower.KbdBacklight
+BUSCTL=/usr/bin/busctl
+
+# No keyboard backlight on this machine: nothing to do.
+cur_out=$("$BUSCTL" --system call "$SVC" "$OBJ" "$IFC" GetBrightness 2>/dev/null) || exit 0
+max_out=$("$BUSCTL" --system call "$SVC" "$OBJ" "$IFC" GetMaxBrightness 2>/dev/null) || exit 0
+cur=${cur_out##* }
+max=${max_out##* }
+
+[ "$max" -gt 0 ] 2>/dev/null || exit 0
+
+step=$(( (max + 19) / 20 ))            # ceil(max/20) == 5% of full scale
+[ "$step" -lt 1 ] && step=1
+
+if [ "$DIR" = + ]; then val=$((cur + step)); else val=$((cur - step)); fi
+[ "$val" -gt "$max" ] && val=$max
+[ "$val" -lt 0 ] && val=0
+
+"$BUSCTL" --system call "$SVC" "$OBJ" "$IFC" SetBrightness i "$val"
